@@ -1,0 +1,21 @@
+{
+  "name": "twitter-bot-reddit-posts",
+  "version": "1.0.0",
+  "description": "a twitter bot that publish the memes i like on reddit",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "tweetbot",
+    "twitter",
+    "bot",
+    "reddit",
+    "upvotes"
+  ],
+  "author": "Jason Ruiz",
+  "license": "ISC",
+  "dependencies": {
+    "twit": "^2.2.11"
+  }
+}
