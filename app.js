@@ -15,7 +15,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true });
 client.connect(err => {
   const db = client.db("urzhul-bot");
 
-  //setInterval(db => {
+  setInterval(db => {
     //var today = new Date().getHours();
     //if (today >= 7 && today <= 22) {
       getUpvotedPosts(db);
@@ -23,7 +23,7 @@ client.connect(err => {
     //} else {
 
     //}
-  //}, 7260000, db)
+  }, 7260000, db)
 });
 
 
