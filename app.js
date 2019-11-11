@@ -16,13 +16,13 @@ client.connect(err => {
   const db = client.db("urzhul-bot");
 
   setInterval(db => {
-    //var today = new Date().getHours();
-    //if (today >= 7 && today <= 22) {
+    var today = new Date().getHours();
+    if (today >= 7 && today <= 22) {
       getUpvotedPosts(db);
       postMedia(db);
-    //} else {
+    } else {
 
-    //}
+    }
   }, 7260000, db)
 });
 
