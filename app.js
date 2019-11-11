@@ -8,14 +8,14 @@ const http = require('http');
 const fs = require('fs');
 
 const MongoClient = require('mongodb').MongoClient;
-const uri = "mongodb+srv://burgersbacon:ayylmao@burgersbacon-lvg3y.mongodb.net/urzhul-bot"
+const uri = "mongodb+srv://" + MONGODB_USERNAME + ":" + MONGODB_PASSWORD + "@burgersbacon-lvg3y.mongodb.net/urzhul-bot"
 const client = new MongoClient(uri, { useNewUrlParser: true });
 
 
 client.connect(err => {
   const db = client.db("urzhul-bot");
 
-  setInterval(db => {
+  //setInterval(db => {
     //var today = new Date().getHours();
     //if (today >= 7 && today <= 22) {
       getUpvotedPosts(db);
@@ -23,7 +23,7 @@ client.connect(err => {
     //} else {
 
     //}
-  }, 7260000, db)
+  //}, 7260000, db)
 });
 
 
