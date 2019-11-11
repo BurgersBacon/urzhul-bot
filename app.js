@@ -8,7 +8,7 @@ const http = require('http');
 const fs = require('fs');
 
 const MongoClient = require('mongodb').MongoClient;
-const uri = "mongodb+srv://" + MONGODB_USERNAME + ":" + MONGODB_PASSWORD + "@burgersbacon-lvg3y.mongodb.net/urzhul-bot"
+const uri = "mongodb+srv://" + process.env.MONGODB_USERNAME + ":" + process.env.MONGODB_PASSWORD + "@burgersbacon-lvg3y.mongodb.net/urzhul-bot"
 const client = new MongoClient(uri, { useNewUrlParser: true });
 
 

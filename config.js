@@ -1,20 +1,20 @@
 module.exports = {
   mainTwitter: {
-    consumer_key: MAIN_TW_CONSUMER_KEY,
-    consumer_secret: MAIN_TW_SECRET_KEY,
-    access_token: MAIN_TW_ACCESS_TOKEN,
-    access_token_secret: MAIN_TW_ACCESS_TOKEN_SECRET
+    consumer_key: process.env.MAIN_TW_CONSUMER_KEY,
+    consumer_secret: process.env.MAIN_TW_SECRET_KEY,
+    access_token: process.env.MAIN_TW_ACCESS_TOKEN,
+    access_token_secret: process.env.MAIN_TW_ACCESS_TOKEN_SECRET
   },
   reddit: {
-    userAgent: REDDIT_USERAGENT,
-    clientId: REDDIT_CLIENT_ID,
-    clientSecret: REDDIT_CLIENT_SECRET,
-    refreshToken: REDDIT_REFRESH_TOKEN
+    userAgent: process.env.REDDIT_USERAGENT,
+    clientId: process.env.REDDIT_CLIENT_ID,
+    clientSecret: process.env.REDDIT_CLIENT_SECRET,
+    refreshToken: process.env.REDDIT_REFRESH_TOKEN
   },
   sourceTwitter: {
-    consumer_key: SOURCE_TW_CONSUMER_KEY,
-    consumer_secret: SOURCE_TW_SECRET_KEY,
-    access_token: SOURCE_TW_ACCESS_TOKEN,
-    access_token_secret: SOURCE_TW_ACCESS_TOKEN_SECRET
+    consumer_key: process.env.SOURCE_TW_CONSUMER_KEY,
+    consumer_secret: process.env.SOURCE_TW_SECRET_KEY,
+    access_token: process.env.SOURCE_TW_ACCESS_TOKEN,
+    access_token_secret: process.env.SOURCE_TW_ACCESS_TOKEN_SECRET
   }
 }
