@@ -29,7 +29,7 @@ const fetchOnePendingPost = (db) => {
     console.log("beep boop what about this post? " + posts[0].url)
     var httpLink = posts[0].url.replace("https", "http");
     downloadMedia(httpLink, `images/${posts[0].id}`, (urlMedia) => {
-      postPhoto(urlMedia, posts[0], db);
+      downloadMedia(urlMedia, posts[0], db);
     });
   })
 }
