@@ -12,9 +12,11 @@ const client = new MongoClient(uri, { useNewUrlParser: true });
 
 // connection to database
 client.connect(err => {
+  console.log("connection succedded!")
   const db = client.db("urzhul-bot");
   // every two hours do:
   setInterval(db => {
+      console.log("mmm ok, imma post something")
       getUpvotedPosts(db);
       fetchOnePendingPost(db);
    }, 7260000, db)
@@ -24,6 +26,7 @@ client.connect(err => {
 const fetchOnePendingPost = (db) => {
   // gets one of the pending posts
   db.collection("pendingPosts").find().sort({id: -1}).limit(1).toArray().then(posts => {
+    console.log("beep boop what about this post? " + posts[0].url)
     var httpLink = posts[0].url.replace("https", "http");
     downloadMedia(httpLink, `images/${posts[0].id}`, (urlMedia) => {
       postPhoto(urlMedia, posts[0], db);
