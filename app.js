@@ -15,11 +15,11 @@ client.connect(err => {
   console.log("connection succedded!")
   const db = client.db("urzhul-bot");
   // every two hours do:
-  setInterval(db => {
+  //setInterval(db => {
       console.log("mmm ok, imma post something")
       getUpvotedPosts(db);
       fetchOnePendingPost(db);
-   }, 7260000, db)
+   //}, 7260000, db)
 });
 
 // this function post the media to twitter
