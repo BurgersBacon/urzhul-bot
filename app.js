@@ -78,7 +78,7 @@ const postTweet = (params, redditPost, db) => {
   Twitter.post('statuses/update', params, function(err, data, response) {
     let paramsForReply = {
       in_reply_to_status_id: data.id_str,
-      status: `@${data.user.screen_name} st0len from: https://reddit.com${redditPost.permalink}, posted (probably st0len too) by: /u/${redditPost.author}, via Reddit`
+      status: `.@${data.user.screen_name} st0len from: https://reddit.com${redditPost.permalink}, posted (probably st0len too) by: /u/${redditPost.author}, via Reddit`
     }
     TwitterLinks.post('statuses/update', paramsForReply, function(err, data, response) {
       db.collection('pendingPosts').deleteMany({
