@@ -16,5 +16,9 @@ module.exports = {
     consumer_secret: process.env.SOURCE_TW_SECRET_KEY,
     access_token: process.env.SOURCE_TW_ACCESS_TOKEN,
     access_token_secret: process.env.SOURCE_TW_ACCESS_TOKEN_SECRET
+  },
+  mongoDB: {
+    username: process.env.MONGODB_USERNAME,
+    pass: process.env.MONGODB_PASSWORD
   }
 }
