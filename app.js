@@ -16,7 +16,9 @@ client.connect(err => {
   const db = client.db("urzhul-bot");
 
   listenTwitterMentions(db);
-  runPosting(db);
+  setInterval(db => {
+      runPosting(db);
+   }, 7260000, db)
 });
 
 // run commands every two hours
@@ -24,10 +26,6 @@ const runPosting = (db) => {
   console.log("mmm ok, imma post something");
   getUpvotedPosts(db);
   fetchOnePendingPost(db);
-
-  setInterval(db => {
-      runPosting(db);
-   }, 7260000, db)
 }
 
 // streams everytime the bot @burgrbot gets mentioned
