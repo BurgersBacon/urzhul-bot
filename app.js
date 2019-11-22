@@ -34,6 +34,7 @@ const runPosting = (db) => {
 const listenTwitterMentions = (db) => {
   let stream = Twitter.stream('statuses/filter', { track: ['@burgrbot'] });
   stream.on('tweet', function (tweet) {
+    console.log(`received mention (${tweet.text})`);
     let params = {
       in_reply_to_status_id: tweet.id_str,
       status: `@${tweet.user.screen_name} `
@@ -45,7 +46,7 @@ const listenTwitterMentions = (db) => {
         tweetBurgrbot(params);
       });
     } else {
-      params.status = params.status + (tweet.user.screen_name == "valcorn31") ? "miauuuuuu... i mean, woof, i mean beep beep boop im a bot" : "beep beep boop! im a dumb bot, i dont know what you're saying lmaoo";
+      params.status = params.status + ((tweet.user.screen_name == "valcorn31") ? "miauuuuuu... i mean, woof, i mean beep beep boop im a bot" : "beep beep boop! im a dumb bot, i dont know what you're saying lmaoo");
       tweetBurgrbot(params);
     }
 
