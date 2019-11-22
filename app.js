@@ -143,7 +143,11 @@ const getUpvotedPosts = (db) => {
             });
           }
         });
-        console.log(`${savedItems} new items saved into database`)
+        if (savedItems > 0) {
+          let msg = `${savedItems} new items saved into database`
+          console.log(msg)
+          tweetBurgrbot({status: msg})
+        }
     });
   });
 }
