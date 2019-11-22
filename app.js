@@ -8,88 +8,99 @@ const http = require('http');
 const fs = require('fs');
 const MongoClient = require('mongodb').MongoClient;
 const uri = "mongodb+srv://" + config.mongoDB.username + ":" + config.mongoDB.pass + "@burgersbacon-lvg3y.mongodb.net/urzhul-bot"
-const client = new MongoClient(uri, { useNewUrlParser: true });
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 // connection to database
 client.connect(err => {
   console.log("connection succedded!")
   const db = client.db("urzhul-bot");
 
-  // streams everytime the bot @burgrbot gets mentioned
-  let stream = Twitter.stream('statuses/filter', { track: ['@burgrbot'] } )
-  stream.on('tweet', function (tweet) {
-    if (tweet.text.includes("!pending")) {
-      countPendingPosts(db, {id_str: tweet.id_str, screen_name: tweet.user.screen_name})
-    } else {
-      let msg;
-      msg = tweet.user.screen_name == "valcorn31" ? "miauuuuuu... i mean, woof, i mean beep beep boop im a bot" : "beep beep boop! im a dumb bot, i dont know what you're saying lmaoo"
-      let params = {
-        in_reply_to_status_id: tweet.id_str,
-        status: `@${tweet.user.screen_name} ${msg}`
-      }
-      tweetBurgrbot(params)
-    }
-  });
-
-  console.log("mmm ok, imma post something");
-  getUpvotedPosts(db);
-  countPendingPosts(db);
-  fetchOnePendingPost(db);
-
-  // every two hours do:
-  setInterval(db => {
-      console.log("mmm ok, imma post something");
-      getUpvotedPosts(db);
-      fetchOnePendingPost(db);
-      countPendingPosts(db);
-   }, 7260000, db)
+  listenTwitterMentions(db);
+  runPosting(db);
 });
 
-// this function post the media to twitter
-const fetchOnePendingPost = (db) => {
-  // gets one of the pending posts
-  db.collection("pendingPosts").find().sort({id: 1}).limit(1).toArray().then(posts => {
-    console.log("beep boop what about this post? " + posts[0].url);
-    let httpLink = posts[0].url.replace("https", "http");
-    let httpLinkParts = httpLink.split(".");
-    let fileFormat = httpLinkParts[httpLinkParts.length - 1];
+// run commands every two hours
+const runPosting = (db) => {
+  console.log("mmm ok, imma post something");
+  getUpvotedPosts(db);
+  fetchOnePendingPost(db);
 
-    switch (fileFormat) {
-      case "jpg":
-      case "png":
-        downloadMedia(httpLink, `images/${posts[0].id}${fileFormat}`, (urlMedia) => {
-          uploadPhotoToTwitter(urlMedia, posts[0], db);
-        });
-        break;
-      // case "vgif":
-      //
-      //   break;
-      default:
-        console.log(`i dont know that extention, post: ${posts[0].id}`);
+  setInterval(db => {
+      runPosting(db);
+   }, 7260000, db)
+}
+
+// streams everytime the bot @burgrbot gets mentioned
+const listenTwitterMentions = (db) => {
+  let stream = Twitter.stream('statuses/filter', { track: ['@burgrbot'] });
+  stream.on('tweet', function (tweet) {
+    let params = {
+      in_reply_to_status_id: tweet.id_str,
+      status: `@${tweet.user.screen_name} `
+    };
+
+    if (tweet.text.includes("!pending")) {
+      db.collection("pendingPosts").countDocuments((err, count) => {
+        params.status = `${params.status} beep beep boop, pending posts: ${count}`
+      });
+    } else {
+      params.status = params.status + (tweet.user.screen_name == "valcorn31") ? "miauuuuuu... i mean, woof, i mean beep beep boop im a bot" : "beep beep boop! im a dumb bot, i dont know what you're saying lmaoo";
     }
+    tweetBurgrbot(params);
   });
 }
 
-// this function counts reamin posts and notifies if list ending soon
-const countPendingPosts = (db, replying_to) => {
+// this function post the media to twitter
+const fetchOnePendingPost = (db, replying_to) => {
   // gets one of the pending posts
-  db.collection("pendingPosts").count((err, count) => {
+  db.collection("pendingPosts").countDocuments((err, count) => {
     let params;
-
-    if (replying_to) {
-      params = {
-        in_reply_to_status_id: replying_to.id_str,
-        status: `@${replying_to.screen_name} beep beep boop, pending posts: ${count}`
+    if (count < 12 && count % 2 == 1) {
+      let params = {
+        status: (count == 1) ? `@BurgersBacon no me quiero ir señor stark 😣😭` : `@BurgersBacon beep beep boop, bro im gonna die, i just have ${count} memes, feed me plox 🙏`
       }
       tweetBurgrbot(params);
-
-    } else if (count < 12 && count % 2 == 1) {
-      params = {
-        status: count == 1 ? `@BurgersBacon no me quiero ir señor stark 😣😭` : `@BurgersBacon beep beep boop, bro im gonna die, i just have ${count} memes, feed me plox 🙏`
-      }
-      tweetBurgrbot(params);
-
     }
+
+    var randomNumber = Math.floor(Math.random() * count);
+    db.collection("pendingPosts").find().limit(1).skip(randomNumber).toArray().then(posts => {
+      let redditPost = posts[0];
+      console.log(`beep boop what about this post? ${redditPost.url}`);
+      let httpLink = redditPost.url.replace("https", "http");
+      let httpLinkParts = httpLink.split(".");
+      let fileFormat = httpLinkParts[httpLinkParts.length - 1];
+      switch (fileFormat) {
+        case "jpg":
+        case "png":
+          downloadMedia(httpLink, `images/${redditPost.id}${fileFormat}`, (urlMedia) => {
+            uploadPhotoToTwitter(urlMedia, redditPost, db);
+          });
+        break;
+        // case "vgif":
+        //
+        //   break;
+        default:
+          console.log(`i dont know that extention, post: ${posts[0].id}`);
+          movePendingPost(db, redditPost, 'unsupportedPosts');
+          runPosting(db);
+      }
+    });
+  });
+}
+
+// move an item from pending posts to other table (toTable)
+const movePendingPost = (db, redditPost, toTable) => {
+  db.collection('pendingPosts').deleteMany({
+    id: redditPost.id
+  }).then(() => {
+    db.collection(toTable).insertOne({
+      id: redditPost.id,
+      url: redditPost.url,
+      permalink: redditPost.permalink,
+      author: redditPost.author
+    }).then(() => {
+      console.log(`beep beep boop, reddit post ${redditPost.id} ${toTable == 'postedPosts' ? 'posted on Twitter!' : 'archived on database!'}`)
+    });
   });
 }
 
@@ -148,19 +159,7 @@ const tweetUrzhul = (params, redditPost, db) => {
 const tweetBurgrbot = (paramsForReply, redditPost, db) => {
   TwitterLinks.post('statuses/update', paramsForReply, function(err, data, response) {
     if (redditPost) {
-      db.collection('pendingPosts').deleteMany({
-        id: redditPost.id
-      }).then(() => {
-        db.collection("postedPosts").insertOne({
-          id: redditPost.id,
-          url: redditPost.url,
-          permalink: redditPost.permalink,
-          author: redditPost.author
-        }).then(() => {
-          console.log(`beep beep boop, reddit post ${redditPost.id} posted on twitter!`)
-        });
-      });
-
+      movePendingPost(db, redditPost, 'postedPosts');
     } else {
       console.log("replied to someone");
     }
