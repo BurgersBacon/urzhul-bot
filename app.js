@@ -41,12 +41,14 @@ const listenTwitterMentions = (db) => {
 
     if (tweet.text.includes("!pending")) {
       db.collection("pendingPosts").countDocuments((err, count) => {
-        params.status = `${params.status} beep beep boop, pending posts: ${count}`
+        params.status = `${params.status} beep beep boop, pending posts: ${count}`;
+        tweetBurgrbot(params);
       });
     } else {
       params.status = params.status + (tweet.user.screen_name == "valcorn31") ? "miauuuuuu... i mean, woof, i mean beep beep boop im a bot" : "beep beep boop! im a dumb bot, i dont know what you're saying lmaoo";
+      tweetBurgrbot(params);
     }
-    tweetBurgrbot(params);
+
   });
 }
 
