@@ -85,7 +85,7 @@ const fetchOnePendingPost = (db, replying_to) => {
         default:
           console.log(`i dont know that extention, post: ${posts[0].id}`);
           movePendingPost(db, redditPost, 'unsupportedPosts');
-          runPosting(db);
+          //runPosting(db);
       }
     });
   });
