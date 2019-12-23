@@ -116,8 +116,9 @@ const getFormatAndPost = (redditPost, db) => {
     console.log(`getting media from imgur.com, media id: ${imgurId}`);
     imgurClient.getImage(imgurId, function(data){
       var jsonResponse = JSON.parse(data);
-      let httpLinkParts = httpLink.split(".");
+      let httpLinkParts = jsonResponse.data.link.split(".");
       let fileFormat = httpLinkParts[httpLinkParts.length - 1];
+      console.log(jsonResponse, httpLinkParts, fileFormat)
       downloadMedia(jsonResponse.data.link.replace("https", "http"), `images/${redditPost.id}.${fileFormat}`, (urlMedia) => {
         uploadPhotoToTwitter(urlMedia, redditPost, db);
       });
