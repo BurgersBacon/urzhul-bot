@@ -9,6 +9,8 @@ const fs = require('fs');
 const MongoClient = require('mongodb').MongoClient;
 const uri = "mongodb+srv://" + config.mongoDB.username + ":" + config.mongoDB.pass + "@burgersbacon-lvg3y.mongodb.net/urzhul-bot"
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+const Imgur = require('./scripts/imgur-api');
+const imgurClient = new Imgur(config.imgur);
 
 // connection to database
 client.connect(err => {
@@ -16,9 +18,10 @@ client.connect(err => {
   const db = client.db("urzhul-bot");
 
   listenTwitterMentions(db);
+
   setInterval(db => {
-      runPosting(db);
-   }, 7260000, db)
+       runPosting(db);
+  }, 7260000, db)
 });
 
 // run commands every two hours
@@ -30,19 +33,49 @@ const runPosting = (db) => {
 
 // streams everytime the bot @burgrbot gets mentioned
 const listenTwitterMentions = (db) => {
+  console.log("listening...");
   let stream = Twitter.stream('statuses/filter', { track: ['@burgrbot'] });
   stream.on('tweet', function (tweet) {
-    console.log(`received mention (${tweet.text})`);
+    let text = tweet.text;
+    console.log(`received mention (${text})`);
+
     let params = {
       in_reply_to_status_id: tweet.id_str,
       status: `@${tweet.user.screen_name} `
     };
 
-    if (tweet.text.includes("!pending")) {
+    if (text.includes("!pending")) {
+
       db.collection("pendingPosts").countDocuments((err, count) => {
         params.status = `${params.status} beep beep boop, pending posts: ${count}`;
         tweetBurgrbot(params);
       });
+
+    } else if (text.includes("!post")) {
+
+      let wordsArray = text.split(" ");
+      let postIdPosition = wordsArray.findIndex((word) => word == "!post") + 1
+      let postId = wordsArray[postIdPosition]
+      if (postId) {
+        db.collection("pendingPosts").find({id: postId}).limit(1).toArray().then(posts => {
+          if (posts.length > 0) {
+            let post = posts[0];
+            params.status = `${params.status} yup! i have the post ${post.id} on my folder, im going to let @snaqchat know that you need it!`;
+            tweetBurgrbot(params);
+            getFormatAndPost(post, db);
+          } else {
+            params.status = `${params.status} i dont have that post, man, please provide an existent post in my database`;
+            tweetBurgrbot(params);
+          }
+        });
+      } else {
+        params.status = `${params.status} you did not provided an id, so i guess im gonna pick one, hope you like my selection, master. i mean, beep beep boop! im a dumb bot!`;
+        tweetBurgrbot(params);
+      }
+
+
+      // params.status = `${params.status} `;
+      // tweetBurgrbot(params);
     } else {
       params.status = params.status + ((tweet.user.screen_name == "valcorn31") ? "miauuuuuu... i mean, woof, i mean beep beep boop im a bot" : "beep beep boop! im a dumb bot, i dont know what you're saying lmaoo");
       tweetBurgrbot(params);
@@ -67,26 +100,48 @@ const fetchOnePendingPost = (db, replying_to) => {
     db.collection("pendingPosts").find().limit(1).skip(randomNumber).toArray().then(posts => {
       let redditPost = posts[0];
       console.log(`beep boop what about this post? ${redditPost.url}`);
-      let httpLink = redditPost.url.replace("https", "http");
-      let httpLinkParts = httpLink.split(".");
-      let fileFormat = httpLinkParts[httpLinkParts.length - 1];
-      switch (fileFormat) {
-        case "jpg":
-        case "png":
-          downloadMedia(httpLink, `images/${redditPost.id}${fileFormat}`, (urlMedia) => {
-            uploadPhotoToTwitter(urlMedia, redditPost, db);
-          });
-        break;
-        // case "vgif":
-        //
-        //   break;
-        default:
-          console.log(`i dont know that extention, post: ${posts[0].id}`);
-          movePendingPost(db, redditPost, 'unsupportedPosts');
-          //runPosting(db);
-      }
+      getFormatAndPost(redditPost, db)
     });
   });
+}
+
+const getFormatAndPost = (redditPost, db) => {
+  console.log(redditPost);
+  let httpLink = redditPost.url.replace("https", "http");
+
+  if (isImgur(httpLink)) {
+    let httpLinkPartsBySlash = httpLink.split("/");
+    let imgurFile = httpLinkPartsBySlash[httpLinkPartsBySlash.length - 1].split(".")
+    let imgurId = imgurFile[0];
+    console.log(`getting media from imgur.com, media id: ${imgurId}`);
+    imgurClient.getImage(imgurId, function(data){
+      var jsonResponse = JSON.parse(data);
+      let httpLinkParts = httpLink.split(".");
+      let fileFormat = httpLinkParts[httpLinkParts.length - 1];
+      downloadMedia(jsonResponse.data.link.replace("https", "http"), `images/${redditPost.id}.${fileFormat}`, (urlMedia) => {
+        uploadPhotoToTwitter(urlMedia, redditPost, db);
+      });
+    });
+  } else {
+    let httpLinkParts = httpLink.split(".");
+    let fileFormat = httpLinkParts[httpLinkParts.length - 1];
+
+    switch (fileFormat) {
+      case "jpg":
+      case "png":
+        downloadMedia(httpLink, `images/${redditPost.id}.${fileFormat}`, (urlMedia) => {
+          uploadPhotoToTwitter(urlMedia, redditPost, db);
+        });
+      break;
+      // case "vgif":
+      //
+      //   break;
+      default:
+        console.log(`i dont know that extention, post: ${posts[0].id}`);
+        movePendingPost(db, redditPost, 'unsupportedPosts');
+        //runPosting(db);
+    }
+  }
 }
 
 // move an item from pending posts to other table (toTable)
@@ -195,4 +250,8 @@ const uploadPhotoToTwitter = (urlImage, redditPost, db) => {
       }
     })
   });
+}
+
+const isImgur = (url) => {
+  return url.includes("imgur");
 }
