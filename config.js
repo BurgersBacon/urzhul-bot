@@ -20,5 +20,9 @@ module.exports = {
   mongoDB: {
     username: process.env.MONGODB_USERNAME,
     pass: process.env.MONGODB_PASSWORD
+  },
+  imgur: {
+    clientID: process.env.IMGUR_CLIENT,
+    clientIDSecret: process.env.IMGUR_CLIENT_SECRET
   }
 }
