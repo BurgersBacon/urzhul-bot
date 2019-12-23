@@ -15,20 +15,25 @@ class imgurMethods {
          path: `${this.path}/${method}/${idImage?idImage:''}`,
          method: 'GET'
       };
+      
+      console.log(`sending request to ${options.path}`);
 
       var request = https.get(options, (res) => {
         res.setEncoding('utf8');
         res.on('data', function (data) {
+            console.log("image found in imgur, posting...");
             callback(data);
         });
       });
       request.on('error', function(err) {
-          return(err)
+          console.log(err);
+          return(err);
       });
     };
   }
 
   getImage(idImage, callback) {
+    console.log(`getting image ${idImage}`);
     this.getRequest("image", callback, idImage);
   }
 }
