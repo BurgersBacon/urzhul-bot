@@ -1,1 +1,1 @@
-worker: node app.js
+worker: node --max-old-space-size=8192 app.js

@@ -15,7 +15,7 @@ class imgurMethods {
          path: `${this.path}/${method}/${idImage?idImage:''}`,
          method: 'GET'
       };
-      
+
       console.log(`sending request to ${options.path}`);
 
       var request = https.get(options, (res) => {
