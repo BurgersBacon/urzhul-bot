@@ -128,7 +128,6 @@ const getFormatAndPost = (redditPost, db) => {
       var jsonResponse = JSON.parse(data);
       let httpLinkParts = jsonResponse.data.link.split(".");
       let fileFormat = httpLinkParts[httpLinkParts.length - 1];
-      console.log(jsonResponse, httpLinkParts, fileFormat)
       downloadMedia(jsonResponse.data.link.replace("https", "http"), `images/${redditPost.id}.${fileFormat}`, (urlMedia) => {
         uploadPhotoToTwitter(urlMedia, redditPost, db);
       });
