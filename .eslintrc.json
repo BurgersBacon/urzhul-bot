@@ -10,5 +10,8 @@
         "semi": "error",
         "no-console": 0
     },
+    "env": {
+      "node": true
+    },
     "extends": "eslint:recommended"
 }
